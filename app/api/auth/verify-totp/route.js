@@ -25,12 +25,31 @@ export async function POST(request) {
     // Initialize TOTP manager
     const totpManager = new TotpManager();
 
+    // Debug logging
+    console.log('TOTP Verification Debug:');
+    console.log('- Username:', username);
+    console.log('- Token:', token);
+    console.log('- Secret (first 8 chars):', secret.substring(0, 8) + '...');
+    console.log('- Current time:', new Date().toISOString());
+    
+    // Generate expected token for debugging
+    const expectedToken = totpManager.generateTokenForTesting(secret);
+    console.log('- Expected token:', expectedToken);
+
     // Verify TOTP token
     const isValid = totpManager.verifyToken(token, secret);
+    console.log('- Verification result:', isValid);
 
     if (!isValid) {
       return NextResponse.json(
-        { error: '無効なトークンです' },
+        { 
+          error: '無効なトークンです',
+          debug: {
+            provided: token,
+            expected: expectedToken,
+            time: new Date().toISOString()
+          }
+        },
         { status: 401 }
       );
     }

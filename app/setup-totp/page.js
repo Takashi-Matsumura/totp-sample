@@ -22,8 +22,18 @@ export default function SetupTOTP() {
     }
     setUsername(storedUsername);
     
-    // Generate QR code
-    generateQRCode(storedUsername);
+    // Check if we already have QR data
+    const storedQRCode = localStorage.getItem('setupQRCode');
+    const storedSecret = localStorage.getItem('setupSecret');
+    
+    if (storedQRCode && storedSecret) {
+      // Use existing QR data
+      setQrCode(storedQRCode);
+      setSecret(storedSecret);
+    } else {
+      // Generate new QR code
+      generateQRCode(storedUsername);
+    }
   }, [router]);
 
   const generateQRCode = async (username) => {
@@ -44,6 +54,9 @@ export default function SetupTOTP() {
       if (response.ok) {
         setQrCode(data.qrCodeDataUrl);
         setSecret(data.secret);
+        // Store QR data to prevent regeneration
+        localStorage.setItem('setupQRCode', data.qrCodeDataUrl);
+        localStorage.setItem('setupSecret', data.secret);
       } else {
         setError(data.error || 'QRコードの生成に失敗しました');
       }
@@ -76,8 +89,10 @@ export default function SetupTOTP() {
       const data = await response.json();
 
       if (response.ok && data.valid) {
-        // Clear stored username
+        // Clear stored data
         localStorage.removeItem('setupUsername');
+        localStorage.removeItem('setupQRCode');
+        localStorage.removeItem('setupSecret');
         // Redirect to login
         router.push('/login?setup=success');
       } else {

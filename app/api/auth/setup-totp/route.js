@@ -37,6 +37,13 @@ export async function POST(request) {
     
     await db.close();
 
+    // Debug logging
+    console.log('TOTP Setup Debug:');
+    console.log('- Username:', username);
+    console.log('- Generated secret (base32):', secret.base32);
+    console.log('- otpauth URL:', qrData.otpauthUrl);
+    console.log('- Current expected token:', totpManager.generateTokenForTesting(secret.base32));
+
     return NextResponse.json({
       qrCodeDataUrl: qrData.qrCodeDataUrl,
       otpauthUrl: qrData.otpauthUrl,
