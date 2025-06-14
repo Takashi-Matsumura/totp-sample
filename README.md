@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TOTP認証システム サンプルアプリケーション
 
-## Getting Started
+Microsoft Authenticatorとの連携を前提としたTOTP（Time-based One-Time Password）認証システムのデモンストレーションアプリケーションです。RFC 6238準拠の二要素認証を実装し、実際のエンタープライズアプリケーションと同等のセキュアな認証フローを提供します。
 
-First, run the development server:
+## 主な機能
+
+- **ユーザー登録・ログイン**: パスワード認証とTOTP二要素認証
+- **TOTP設定**: QRコードによるMicrosoft Authenticator連携
+- **セキュアな認証**: JWT + bcrypt + TOTP による多層認証
+- **リアルタイム認証**: 30秒更新の6桁TOTPコード対応
+
+## 技術スタック
+
+- **フロントエンド**: Next.js 15.3.3 (App Router), React 19.0.0, Tailwind CSS v4
+- **バックエンド**: Next.js API Routes, SQLite3, JWT認証
+- **TOTP実装**: speakeasy (RFC 6238準拠), qrcode生成
+- **セキュリティ**: bcryptjs (パスワードハッシュ), jsonwebtoken
+
+## クイックスタート
+
+### 1. 依存関係のインストール
+
+```bash
+npm install
+```
+
+### 2. 環境変数の設定
+
+`.env.local` ファイルを作成し、以下を設定：
+
+```bash
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-environment-for-security
+```
+
+### 3. 開発サーバーの起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000) でアプリケーションにアクセスできます。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 使用方法
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. ユーザー登録
+- ホーム画面から「新規登録」を選択
+- ユーザー名とパスワードを入力して登録
 
-## Learn More
+### 2. TOTP設定
+- 登録後、自動的にTOTP設定画面に遷移
+- 表示されるQRコードをMicrosoft Authenticatorでスキャン
+- Authenticatorに表示される6桁コードを入力して設定完了
 
-To learn more about Next.js, take a look at the following resources:
+### 3. ログイン
+- パスワード入力後、Microsoft Authenticatorの6桁コードを入力
+- 認証成功でダッシュボードに遷移
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Microsoft Authenticator 設定手順
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Microsoft Authenticatorアプリを起動
+2. 「+」ボタン → 「他のアカウント（Google、Facebook等）」を選択
+3. 「QRコードをスキャン」を選択
+4. アプリで表示されるQRコードをスキャン
+5. アカウント名「MyNextJSApp:ユーザー名」で追加完了
 
-## Deploy on Vercel
+## 開発コマンド
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run dev    # 開発サーバー起動
+npm run build  # 本番ビルド
+npm run start  # 本番サーバー起動
+npm run lint   # ESLint実行
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## プロジェクト構成
+
+```
+├── app/                    # Next.js App Router
+│   ├── page.tsx           # ホーム画面
+│   ├── register/          # ユーザー登録
+│   ├── setup-totp/        # TOTP設定
+│   ├── login/             # ログイン
+│   ├── dashboard/         # ダッシュボード
+│   └── api/auth/          # 認証API
+├── lib/                   # ライブラリ
+│   ├── database.js        # SQLite操作
+│   └── totp.js           # TOTP処理
+├── design/               # 設計仕様書
+├── users.db             # データベースファイル（自動生成）
+└── .env.local           # 環境変数
+```
+
+## TOTP仕様
+
+- **準拠規格**: RFC 6238 (TOTP), RFC 4226 (HOTP)
+- **アルゴリズム**: HMAC-SHA1
+- **時間ステップ**: 30秒
+- **桁数**: 6桁
+- **時間窓**: ±60秒許容
+- **秘密鍵長**: 160bit
+
+## セキュリティ機能
+
+- **パスワード**: bcrypt ハッシュ化（salt rounds: 10）
+- **TOTP秘密鍵**: 160bit暗号学的安全な鍵生成
+- **JWT**: HS256アルゴリズム、24時間有効期限
+- **入力検証**: 全APIエンドポイントで実装
+
+## 詳細仕様
+
+プロジェクトの詳細な技術仕様や設計方針については、[design/specification.md](./design/specification.md) を参照してください。
+
+## ライセンス
+
+このプロジェクトはサンプル・学習目的で作成されています。
